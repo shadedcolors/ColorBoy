@@ -15,6 +15,11 @@ public class PlayerMovement : MonoBehaviour
     Color32 redColor = new Color32(255, 190, 92, 255);
     Color32 greenColor = new Color32(155, 207, 112, 255);
 
+    //Swiping Variables
+    private Vector2 startSwipePos; //the starting position of where the finger started swiping
+    public int pixelDistToDetect = 25; //How many pixels in a direction is needed for the swipe to move the player
+    private bool fingerDown; //Check if the finger is down
+
     //Set Tilemap
     Grid grid;
     Tilemap tilemap;
@@ -84,6 +89,48 @@ public class PlayerMovement : MonoBehaviour
 
         //Camera follow player
         camera.transform.position = transform.position + offset;
+
+        //Check for initial finger touch
+        if (!fingerDown && Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Began)
+        {
+            startSwipePos = Input.touches[0].position;
+            fingerDown = true;
+        }
+
+        //If touching with your finger...
+        if (fingerDown)
+        {
+            //Swipe Up
+            if (Input.touches[0].position.y >= startSwipePos.y + pixelDistToDetect)
+            {
+                fingerDown = false;
+                Move(new Vector3(0, 1, 0));
+            }
+            //Swipe Down
+            else if (Input.touches[0].position.y <= startSwipePos.y - pixelDistToDetect)
+            {
+                fingerDown = false;
+                Move(new Vector3(0, -1, 0));
+            }
+            //Swipe Left
+            else if (Input.touches[0].position.x <= startSwipePos.x - pixelDistToDetect)
+            {
+                fingerDown = false;
+                Move(new Vector3(-1, 0, 0));
+            }
+            //Swipe Right
+            else if (Input.touches[0].position.x >= startSwipePos.x + pixelDistToDetect)
+            {
+                fingerDown = false;
+                Move(new Vector3(1, 0, 0));
+            }
+        }
+
+        //Remove finger from screen
+        if (fingerDown && Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Ended)
+        {
+            fingerDown = false;
+        }
 
         //Move up
         if (Input.GetKeyDown(KeyCode.UpArrow))
